@@ -23,16 +23,16 @@ Es gibt keinen Test-Runner und keinen Linter im Repo. Nicht erfinden.
 ### Datenfluss
 
 1. `scripts/scrape.mjs` läuft via `.github/workflows/scrape.yml` (cron `*/10 * * * *`) und holt VIX, DXY und US10Y von Yahoos öffentlicher Chart-API. SENTIMENT wird *deterministisch aus VIX abgeleitet* — kein echter Sentiment-Scrape. Wenn echtes Retail-Sentiment gewünscht ist, hier durch Playwright-Scrape (z.B. Myfxbook) ersetzen.
-2. Der Workflow committet die fertige `market_data.json` direkt auf den `gh-pages`-Branch (nicht auf `main`), damit kein voller Vite-Rebuild pro Datenupdate nötig ist.
+2. Der Scraper committet `public/market_data.json` auf `main`. Der Push triggert dann automatisch `deploy.yml`, das alles neu baut und via GitHub Pages publisht. Trade-off: jeder Daten-Update ist ein voller Vite-Build; dafür ist Pages-Source `GitHub Actions` (kein gh-pages-Branch nötig) und wird beim ersten Run automatisch aktiviert.
 3. `src/App.jsx` pollt im Browser alle 10 Minuten `${BASE_URL}market_data.json?t=<now>` (Cache-Buster, `cache: "no-store"`). Bei Fetch-Fehler oder fehlender Datei greift sie auf hartkodierte Fallback-Werte zurück.
 4. UI liest *immer* aus den `useMemo`-Konstanten `MKT` und `SENTIMENT`, niemals direkt aus `liveData`. Neue Live-Felder müssen demselben Live-oder-Fallback-Muster folgen (`src/App.jsx:43-52`).
 
 ### Deploy
 
-- `.github/workflows/deploy.yml` baut bei jedem Push auf `main` mit Vite und published `dist/` via `peaceiris/actions-gh-pages` mit `force_orphan: true` auf den `gh-pages`-Branch.
+- `.github/workflows/deploy.yml` baut bei jedem Push auf `main` mit Vite und published `dist/` via `actions/configure-pages` + `actions/upload-pages-artifact` + `actions/deploy-pages` direkt nach Pages. `configure-pages` aktiviert Pages programmatisch beim ersten Run — keine manuellen Repo-Settings nötig.
 - Vor dem Build läuft `npm run scrape` (best-effort, `continue-on-error`) damit der initiale Deploy schon Live-Werte enthält.
 - `vite.config.js` setzt `base` aus `VITE_BASE` (vom Workflow auf `/<repo-name>/` gesetzt) — lokal default `/dashboard/`. Falls das Repo umbenannt wird oder unter Custom Domain läuft, hier anpassen.
-- `concurrency: gh-pages` verhindert, dass Deploy und Scraper sich gegenseitig auf demselben Branch überschreiben.
+- Job-Permissions: `pages: write`, `id-token: write` (nötig für `actions/deploy-pages`). `concurrency: pages` serialisiert parallele Runs.
 
 ### Komponentenlogik (`src/App.jsx`)
 
@@ -43,7 +43,7 @@ Es gibt keinen Test-Runner und keinen Linter im Repo. Nicht erfinden.
 ## Bekannte Bedingungen
 
 - Yahoos Chart-API ist undokumentiert und kann sich ohne Vorwarnung ändern. Der Scraper hat per-Symbol Fallbacks und schreibt auch bei Teilfehlschlag eine vollständige `market_data.json` (mit `"(Fallback: …)"` im `lastUpdated`-Feld).
-- Der Scraper-Workflow überspringt sich selbst, solange der `gh-pages`-Branch noch nicht existiert. Erst-Setup: einmal Deploy laufen lassen (oder `workflow_dispatch`), danach läuft der Cron.
+- Jeder Scraper-Run löst einen Vite-Build aus (Push auf `main` → `deploy.yml`). Build dauert ~30s und ist innerhalb der GitHub-Actions-Free-Limits, aber bei einer Cron-Frequenz unter 10 Min wird's eng.
 - `getToday()` (`src/App.jsx:7-15`) wird im Header verwendet; bei Bearbeitungen daran denken, dass die Funktion lokale Browserzeit liefert, der Scraper-Timestamp aber UTC ist.
 
 ## Git-Workflow
