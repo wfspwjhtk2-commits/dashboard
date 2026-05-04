@@ -8,7 +8,7 @@ function getToday(){
   const d=new Date(),p=n=>String(n).padStart(2,"0");
   return{
     iso:`${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`,
-    de:d.toLocaleDateString("de-DE",{weekday:"long",day:"2-digit",month:"long",year:\"numeric\"}),
+    de:d.toLocaleDateString("de-DE",{weekday:"long",day:"2-digit",month:"long",year:"numeric"}),
     short:d.toLocaleDateString("de-DE",{day:"2-digit",month:"2-digit",year:"numeric"}),
     weekday:["So","Mo","Di","Mi","Do","Fr","Sa"][d.getDay()],
   };
@@ -19,18 +19,18 @@ export default function App() {
   const [liveData, setLiveData] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // --- DATA FETCHING (Verbindung zu Playwright/GitHub) ---
+  // --- DATA FETCHING (market_data.json wird vom GitHub-Actions-Scraper gepflegt) ---
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // HINWEIS: Ersetze die URL mit deinem Pfad zu market_data.json
-        const response = await fetch('https://raw.githubusercontent.com/DEIN_GITHUB_USER/DEIN_REPO_NAME/main/market_data.json');
+        const url = `${import.meta.env.BASE_URL}market_data.json?t=${Date.now()}`;
+        const response = await fetch(url, { cache: "no-store" });
         if (response.ok) {
           const data = await response.json();
           setLiveData(data);
         }
       } catch (err) {
-        console.warn("Nutze lokale Fallback-Daten (GitHub-Daten noch nicht bereit).");
+        console.warn("Nutze lokale Fallback-Daten (Scraper noch nicht gelaufen).");
       } finally {
         setLoading(false);
       }
@@ -81,9 +81,12 @@ export default function App() {
       {/* Header mit Live-Status */}
       <header style={{ borderBottom: "1px solid #1c1c21", paddingBottom: 15, marginBottom: 20 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <h1 style={{ margin: 0, fontSize: 18, letterSpacing: -0.5 }}>
-            FX PRO <span style={{ color: "#00e5a0" }}>v18.1 LIVE</span>
-          </h1>
+          <div>
+            <h1 style={{ margin: 0, fontSize: 18, letterSpacing: -0.5 }}>
+              FX PRO <span style={{ color: "#00e5a0" }}>v18.1 LIVE</span>
+            </h1>
+            <div style={{ fontSize: 10, color: "#666", marginTop: 4 }}>{getToday().de}</div>
+          </div>
           <div style={{ fontSize: 10, color: "#888", textAlign: "right" }}>
             MARKET DATA: {MKT.lastUpdated}<br/>
             STATUS: <span style={{ color: loading ? "#f5c842" : "#00e5a0" }}>

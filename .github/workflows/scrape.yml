@@ -1,0 +1,56 @@
+name: Scrape Market Data
+
+on:
+  schedule:
+    # Alle 10 Minuten. GitHub kann cron-Runs unter Last verzögern;
+    # tatsächlicher Intervall ist gelegentlich 15-20 Min.
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: gh-pages
+  cancel-in-progress: false
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Run Scraper
+        run: node scripts/scrape.mjs
+
+      - name: Push market_data.json auf gh-pages
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          cp public/market_data.json /tmp/market_data.json
+
+          git config user.name  "fx-pro-scraper[bot]"
+          git config user.email "fx-pro-scraper[bot]@users.noreply.github.com"
+
+          # gh-pages-Branch holen (fehlt beim allerersten Lauf vor Deploy → skip)
+          if ! git ls-remote --exit-code --heads origin gh-pages > /dev/null; then
+            echo "gh-pages existiert noch nicht — erst Deploy-Workflow laufen lassen."
+            exit 0
+          fi
+
+          git fetch origin gh-pages
+          git checkout gh-pages
+          cp /tmp/market_data.json market_data.json
+
+          if git diff --quiet market_data.json; then
+            echo "Keine Änderung."
+            exit 0
+          fi
+
+          git add market_data.json
+          git commit -m "data: update market_data.json [skip ci]"
+          git push origin gh-pages
