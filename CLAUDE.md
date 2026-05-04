@@ -24,8 +24,8 @@ Inline-Style-Objekte am Ende der Datei (`cardStyle`, `labelStyle`, `valueStyle`,
 
 ## Bekannte Probleme
 
-- Zeile 11 enthält ein escaptes Anführungszeichen (`year:\"numeric\"`) innerhalb eines Template-Literals, das so nicht als JavaScript parst. Bei jeder substantiellen Bearbeitung der Datei muss das gefixt oder zumindest beachtet werden — nicht davon ausgehen, dass die Datei in der aktuellen Form lauffähig ist.
-- Die Fetch-URL ist ein Platzhalter und liefert 404, bis sie ersetzt wird.
+- Die Fetch-URL in `market_data.js:27` ist ein Platzhalter (`DEIN_GITHUB_USER/DEIN_REPO_NAME`) und liefert 404, bis sie durch eine echte GitHub-Raw-URL ersetzt wird. Solange greift die Komponente auf die hartkodierten Fallback-Werte in `MKT` und `SENTIMENT` zurück.
+- `getToday()` ist definiert (`market_data.js:7-15`), wird aber aktuell nirgends im Render aufgerufen.
 
 ## Git-Workflow
 

@@ -8,7 +8,7 @@ function getToday(){
   const d=new Date(),p=n=>String(n).padStart(2,"0");
   return{
     iso:`${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`,
-    de:d.toLocaleDateString("de-DE",{weekday:"long",day:"2-digit",month:"long",year:\"numeric\"}),
+    de:d.toLocaleDateString("de-DE",{weekday:"long",day:"2-digit",month:"long",year:"numeric"}),
     short:d.toLocaleDateString("de-DE",{day:"2-digit",month:"2-digit",year:"numeric"}),
     weekday:["So","Mo","Di","Mi","Do","Fr","Sa"][d.getDay()],
   };
