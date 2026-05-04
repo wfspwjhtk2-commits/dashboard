@@ -1,9 +1,9 @@
 {
   "MKT": {
-    "vix": 17.94,
-    "dxy": 104.2,
-    "yield10y": 4.25,
-    "lastUpdated": "2026-05-04 12:40 UTC (Fallback: VIX, DXY, US10Y)"
+    "vix": 18.17,
+    "dxy": 98.43,
+    "yield10y": 4.45,
+    "lastUpdated": "2026-05-04 18:05 UTC"
   },
   "SENTIMENT": {
     "eur_usd": {
