@@ -1,22 +1,22 @@
 {
   "MKT": {
-    "vix": 19.88,
-    "dxy": 100.09,
+    "vix": 21.51,
+    "dxy": 100.06,
     "yield10y": 4.54,
-    "lastUpdated": "2026-06-05 19:22 UTC"
+    "lastUpdated": "2026-06-05 21:01 UTC"
   },
   "SENTIMENT": {
     "eur_usd": {
-      "retail_long": 44,
-      "retail_short": 56
+      "retail_long": 42,
+      "retail_short": 58
     },
     "gbp_usd": {
-      "retail_long": 50,
-      "retail_short": 50
+      "retail_long": 49,
+      "retail_short": 51
     },
     "nasdaq": {
-      "retail_long": 63,
-      "retail_short": 37
+      "retail_long": 64,
+      "retail_short": 36
     }
   }
 }
